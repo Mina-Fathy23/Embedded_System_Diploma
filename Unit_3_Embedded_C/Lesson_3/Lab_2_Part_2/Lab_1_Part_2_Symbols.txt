@@ -1,0 +1,47 @@
+@copyright: Mina Fathy
+
+Main.o Symbols:
+00000003 C bss_variables
+00000000 R const_variables
+00000004 D g_varibales
+00000000 T main
+00000000 D R_ODR
+
+Startup.o Symbols:
+         U _E_bss
+         U _E_DATA
+         U _E_text
+         U _S_bss
+         U _S_DATA
+         U _stack_top
+00000000 W Bus_fault_Handler
+00000000 T Default_Handler
+00000000 W H_fault_Handler
+         U main
+00000000 W MM_fault_Handler
+00000000 W NMI_Handler
+0000000c T Reset_Handler
+00000000 W Usage_fault_Handler
+00000000 D vectors
+
+learn-in-depth-cortex-m3.elf Symbols:
+20000008 B _E_bss
+20000008 D _E_DATA
+08000190 T _E_text
+20000008 B _S_bss
+20000000 D _S_DATA
+20001008 B _stack_top
+20001008 B bss_variables
+080000cc W Bus_fault_Handler
+0800018c T const_variables
+080000cc T Default_Handler
+20000004 D g_varibales
+080000cc W H_fault_Handler
+0800001c T main
+080000cc W MM_fault_Handler
+080000cc W NMI_Handler
+20000000 D R_ODR
+080000d8 T Reset_Handler
+080000cc W Usage_fault_Handler
+08000000 T vectors
+

@@ -1,0 +1,23 @@
+@copyright: Mina Fathy
+
+Main.o Symbols:
+00000003 C bss_variables
+00000000 R const_variables
+00000004 D g_varibales
+00000000 T main
+00000000 D R_ODR
+
+Startup.o Symbols:
+00000000 T _reset
+         U main
+00000006 t Vector_handler
+
+learn-in-depth-cortex-m3.elf Symbols:
+0800010c T _E_text
+08000100 T _reset
+20000000 B bss_variables
+08000108 T const_variables
+08000110 D g_varibales
+08000050 T main
+0800010c D R_ODR
+08000106 t Vector_handler
