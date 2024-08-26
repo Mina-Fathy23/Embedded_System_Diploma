@@ -71,6 +71,5 @@ void show_students(FIFO_buff_t* fifo_buf);
 
 //Extra
 char check_id(FIFO_buff_t* fifo_buf, int id);
-void Buffer_info(FIFO_buff_t* fifo_buf);
 
 #endif /* STUDENT_MANAGMENT_H_ */
