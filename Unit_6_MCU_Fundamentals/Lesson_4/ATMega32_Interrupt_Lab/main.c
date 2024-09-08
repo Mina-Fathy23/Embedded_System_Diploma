@@ -13,7 +13,7 @@
 
 #define IO_Base 0x20
 
-//GDPIO_Port D
+//GDPIO_Port B
 #define DDRB 	*((vuint32_t*)(IO_Base + 0x17))
 #define PORTB 	*((vuint32_t*)(IO_Base + 0x18))
 
