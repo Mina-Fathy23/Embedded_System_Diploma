@@ -2,7 +2,7 @@
  * main.c
  *
  *  Created on: Sep 7, 2024
- *      Author: Mina Fathy
+ *      Author: EliteBook
  */
 
 
@@ -90,7 +90,7 @@ ISR(INT1_vect)
 	GIFR |= (1 << 7);
 }
 
-ISR(INT2_vect)
+ISR(_VECTOR(3))
 {
 	PORTD |= (1 << 7);
 	_delay_ms(1000);
