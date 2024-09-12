@@ -1,0 +1,177 @@
+/*
+ * LCD.c
+ *
+ *  Created on: Sep 12, 2024
+ *      Author: Mina Fathy
+ */
+
+#include "LCD.h"
+
+
+//	RS
+//	 0:  (Command Mode) Instruction register (for write) Busy flag
+//	 1: Data register (for write and read)
+
+//	RW
+//	 Selects read or write.
+//	 0:Write
+//	 1:Read
+
+//	E
+//	1:Starts data read/write.
+
+void LCD_KICK(void)
+
+{
+	ClearBit(LCD_CTRL, Enable_Switch);
+	//Delay Between Writing Each Letter
+	_delay_ms(20);
+	SetBit(LCD_CTRL, Enable_Switch);
+}
+
+void LCD_check_lcd_isbusy(void)
+{
+	//Read Mode
+	LCD_DataDir_PORT &= ~(0xFF << DATA_shift);
+
+	//Instruction Mode
+	SetBit(LCD_CTRL, RW_Switch);
+	ClearBit(LCD_CTRL, RS_Switch);
+
+	LCD_KICK();
+
+	//Write Mode
+	LCD_DataDir_PORT = 0xFF;
+	SetBit(LCD_CTRL, RS_Switch);
+	ClearBit(LCD_CTRL, RW_Switch);
+}
+
+void LCD_clear_screen(void)
+{
+	LCD_WRITE_COMMAND(LCD_CLEAR_SCREEN);
+}
+
+void LCD_INIT()
+{
+	_delay_ms(20);
+	LCD_check_lcd_isbusy();
+
+	//Write Mode
+	LCD_DataDir_CTRL |= (1 << Enable_Switch) | (1 << RW_Switch) | (1 << RS_Switch);
+	LCD_CTRL &= ~((1 << Enable_Switch) | (1 << RW_Switch) | (1 << RS_Switch));
+
+	LCD_DataDir_PORT = 0xFF;
+	LCD_clear_screen();
+
+#ifdef EIGHT_BIT_MODE
+	LCD_WRITE_COMMAND(LCD_FUNCTION_8BIT_2LINES);
+#endif
+#ifdef FOUR_BIT_MODE
+	LCD_WRITE_COMMAND(0x02); //command to tell LCD we are using D4 -> D7
+	LCD_WRITE_COMMAND(LCD_FUNCTION_4BIT_2LINES);
+#endif
+
+	LCD_WRITE_COMMAND(LCD_ENTRY_MODE);
+	LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW);
+	LCD_WRITE_COMMAND(LCD_DISP_ON_CURSOR_BLINK);
+
+}
+
+void LCD_WRITE_COMMAND(vuint8_t command)
+{
+	LCD_check_lcd_isbusy();
+#ifdef EIGHT_BIT_MODE
+	LCD_PORT = command;
+	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
+	LCD_KICK();
+#endif
+#ifdef FOUR_BIT_MODE
+	//First Stage
+	LCD_PORT = (LCD_PORT & 0x0F) | (command & 0xF0);
+	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
+	_delay_ms(10);
+	LCD_KICK();
+
+	//Second Stage
+	LCD_PORT = (LCD_PORT & 0x0F) | (command << DATA_shift);
+	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
+	_delay_ms(10);
+	LCD_KICK();
+#endif
+}
+
+void LCD_WRITE_CHAR(vuint8_t character)
+{
+	LCD_check_lcd_isbusy();
+#ifdef EIGHT_BIT_MODE
+	LCD_PORT = character;
+	SetBit(LCD_CTRL, RS_Switch);
+	ClearBit(LCD_CTRL, RW_Switch);
+	LCD_KICK();
+#endif
+#ifdef FOUR_BIT_MODE
+	//First Stage
+	LCD_PORT = (LCD_PORT & 0x0F) | (character & 0xF0);
+	SetBit(LCD_CTRL, RS_Switch);
+	ClearBit(LCD_CTRL, RW_Switch);
+	_delay_ms(10);
+	LCD_KICK();
+
+	//Second Stage
+	LCD_PORT = (LCD_PORT & 0x0F) | (character << DATA_shift);
+	SetBit(LCD_CTRL, RS_Switch);
+	ClearBit(LCD_CTRL, RW_Switch);
+	_delay_ms(10);
+	LCD_KICK();
+#endif
+}
+
+void LCD_WRITE_STRING(char* string)
+{
+	vuint8_t count = 0;
+	while(*string > 0)
+	{
+		LCD_WRITE_CHAR(*(string)++);
+		count ++;
+		if(count == 16)
+		{
+			LCD_GOTO_XY(2, 0);
+		}
+		else if(count == 32)
+		{
+			//_delay_ms(); add delay here before Clearing Screen
+			LCD_clear_screen();
+			LCD_GOTO_XY(1, 0);
+			count = 0;
+		}
+	}
+}
+
+void LCD_GOTO_XY(vuint8_t line, vuint8_t position)
+{
+	if(line == 1)
+	{
+		LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW + position);
+	}
+	else if(line == 2)
+	{
+		LCD_WRITE_COMMAND(LCD_BEGIN_AT_SECOND_ROW + position);
+	}
+}
+
+void LCD_CUSTOM_CHAR(void)
+{
+	LCD_WRITE_COMMAND(64);
+	LCD_WRITE_CHAR(0);
+	LCD_WRITE_CHAR(14);
+	LCD_WRITE_CHAR(17);
+	LCD_WRITE_CHAR(2);
+	LCD_WRITE_CHAR(4);
+	LCD_WRITE_CHAR(4);
+	LCD_WRITE_CHAR(0);
+	LCD_WRITE_CHAR(4);
+	LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW);
+	LCD_WRITE_CHAR(0);
+	_delay_ms(10);
+}
+
