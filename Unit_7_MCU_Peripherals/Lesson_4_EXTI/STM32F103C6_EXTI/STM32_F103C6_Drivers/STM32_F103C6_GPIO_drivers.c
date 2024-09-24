@@ -74,15 +74,15 @@ void MCAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_PinConfig_t *PinConfig)
 		}
 		else //PU PD Input
 		{
-			PIN_CNF_MODE = (((PinConfig->GPIO_Mode << 2) | 0x0) & 0x0F);
-
-			if(PinConfig->GPIO_Mode == GPIO_MODE_INPUT_PU)
+				if(PinConfig->GPIO_Mode == GPIO_MODE_INPUT_PU)
 			{
+				PIN_CNF_MODE = (((GPIO_MODE_INPUT_PU << 2) | 0x0) & 0x0F);
 				//Table 20. Port bit configuration table PxODR -> 1
 				GPIOx->ODR |= (1 << PinConfig->GPIO_PinNumber);
 			}
 			else //PULL down Input
 			{
+				PIN_CNF_MODE = (((GPIO_MODE_INPUT_PU << 2) | 0x0) & 0x0F); //Note: Pull-down has same value as Pull-up
 				//Table 20. Port bit configuration table PxODR -> 0
 				GPIOx->ODR |= (0 << PinConfig->GPIO_PinNumber);
 			}
