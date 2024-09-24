@@ -84,8 +84,8 @@ void KEYPAD_Init()
  */
 char KEYPAD_GetChar()
 {
-	vuint8_t keypad_C[4] = {C0, C1, C2, GPIO_PIN_8}; //columns
-	vuint8_t keypad_R[4] = {R0, R1, R2, R3}; //rows of the keypad
+	vuint16_t keypad_C[4] = {C0, C1, C2, C3}; //columns
+	vuint16_t keypad_R[4] = {R0, R1, R2, R3}; //rows of the keypad
 
 	vuint8_t i, j;
 
