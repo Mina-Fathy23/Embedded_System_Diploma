@@ -23,10 +23,12 @@
 void LCD_KICK(void)
 
 {
-	ClearBit(LCD_CTRL, Enable_Switch);
+	LCD_CTRL |= (1 << Enable_Switch);
 	//Delay Between Writing Each Letter
-	_delay_ms(20);
-	SetBit(LCD_CTRL, Enable_Switch);
+	_delay_ms(30);
+	LCD_CTRL &= ~(1 << Enable_Switch);
+	_delay_ms(30);
+
 }
 
 void LCD_check_lcd_isbusy(void)
@@ -41,8 +43,7 @@ void LCD_check_lcd_isbusy(void)
 	LCD_KICK();
 
 	//Write Mode
-	LCD_DataDir_PORT = 0xFF;
-	SetBit(LCD_CTRL, RS_Switch);
+	LCD_DataDir_PORT |= (0xFF << DATA_shift);
 	ClearBit(LCD_CTRL, RW_Switch);
 }
 
@@ -61,6 +62,7 @@ void LCD_INIT()
 	LCD_CTRL &= ~((1 << Enable_Switch) | (1 << RW_Switch) | (1 << RS_Switch));
 
 	LCD_DataDir_PORT = 0xFF;
+	_delay_ms(15);
 	LCD_clear_screen();
 
 #ifdef EIGHT_BIT_MODE
@@ -74,64 +76,68 @@ void LCD_INIT()
 	LCD_WRITE_COMMAND(LCD_ENTRY_MODE);
 	LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW);
 	LCD_WRITE_COMMAND(LCD_DISP_ON_CURSOR_BLINK);
-
 }
 
-void LCD_WRITE_COMMAND(vuint8_t command)
+void LCD_WRITE_COMMAND(unsigned char command)
 {
 	LCD_check_lcd_isbusy();
 #ifdef EIGHT_BIT_MODE
 	LCD_PORT = command;
 	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
+	_delay_ms(1);
 	LCD_KICK();
 #endif
 #ifdef FOUR_BIT_MODE
 	//First Stage
-	LCD_PORT = (LCD_PORT & 0x0F) | (command & 0xF0);
+	LCD_PORT =   (LCD_PORT & 0x0F) | (command & 0xF0);
 	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
-	_delay_ms(10);
 	LCD_KICK();
+	_delay_ms(1);
 
 	//Second Stage
-	LCD_PORT = (LCD_PORT & 0x0F) | (command << DATA_shift);
+//	LCD_PORT =   (LCD_PORT & 0x0F) | ((command & 0x0F) << 4);
+	LCD_PORT =   (LCD_PORT & 0x0F) | ((command << 4) & 0xF0);
 	LCD_CTRL &= ~((1 << RW_Switch) | (1 << RS_Switch));
-	_delay_ms(10);
 	LCD_KICK();
+	_delay_ms(1);
 #endif
 }
 
-void LCD_WRITE_CHAR(vuint8_t character)
+void LCD_WRITE_CHAR(unsigned char character)
 {
-	LCD_check_lcd_isbusy();
 #ifdef EIGHT_BIT_MODE
+	LCD_check_lcd_isbusy();
 	LCD_PORT = character;
 	SetBit(LCD_CTRL, RS_Switch);
 	ClearBit(LCD_CTRL, RW_Switch);
 	LCD_KICK();
 #endif
 #ifdef FOUR_BIT_MODE
+//	LCD_check_lcd_isbusy();
 	//First Stage
 	LCD_PORT = (LCD_PORT & 0x0F) | (character & 0xF0);
-	SetBit(LCD_CTRL, RS_Switch);
-	ClearBit(LCD_CTRL, RW_Switch);
-	_delay_ms(10);
+	LCD_CTRL |= (1 << RS_Switch);
+	LCD_CTRL &= ~(1 << RW_Switch);
 	LCD_KICK();
+	_delay_ms(1);
 
 	//Second Stage
-	LCD_PORT = (LCD_PORT & 0x0F) | (character << DATA_shift);
-	SetBit(LCD_CTRL, RS_Switch);
-	ClearBit(LCD_CTRL, RW_Switch);
-	_delay_ms(10);
+//	LCD_PORT = (LCD_PORT & 0x0F) | ((character & 0x0F) << DATA_shift);
+	LCD_PORT = (LCD_PORT & 0x0F) | ((character << DATA_shift) & 0xF0);
+	LCD_CTRL |= (1 << RS_Switch);
+	LCD_CTRL &= ~(1 << RW_Switch);
 	LCD_KICK();
+	_delay_ms(2);
 #endif
+
 }
 
 void LCD_WRITE_STRING(char* string)
 {
-	vuint8_t count = 0;
+	int count = 0;
 	while(*string > 0)
 	{
-		LCD_WRITE_CHAR(*(string)++);
+		LCD_WRITE_CHAR(*string++);
 		count ++;
 		if(count == 16)
 		{
@@ -147,15 +153,20 @@ void LCD_WRITE_STRING(char* string)
 	}
 }
 
-void LCD_GOTO_XY(vuint8_t line, vuint8_t position)
-{
-	if(line == 1)
+void LCD_GOTO_XY(uint8 line, uint8 position){
+	if (line == 1)
 	{
-		LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW + position);
+		if (position < 16 && position >= 0)
+		{
+			LCD_WRITE_COMMAND(LCD_BEGIN_AT_FIRST_ROW + position);
+		}
 	}
-	else if(line == 2)
+	if (line == 2)
 	{
-		LCD_WRITE_COMMAND(LCD_BEGIN_AT_SECOND_ROW + position);
+		if (position < 16 && position >= 0)
+		{
+			LCD_WRITE_COMMAND(LCD_BEGIN_AT_SECOND_ROW + position);
+		}
 	}
 }
 
