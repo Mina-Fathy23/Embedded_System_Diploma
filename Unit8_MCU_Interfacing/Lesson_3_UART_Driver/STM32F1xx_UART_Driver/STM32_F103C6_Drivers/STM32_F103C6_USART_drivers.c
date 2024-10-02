@@ -25,6 +25,16 @@ UART_PinConfig_t *GP_USART3_Config = NULL;
  *
  * */
 
+/**================================================================
+ * @Fn				- MCAL_UART_Init
+ * @breif			- Initializes UARTx PinY according to specific parameters in PinConfig
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @param [in]		- UART_Config: Set by @ref USART_MODE_Define, @ref USART_BaudRate_Define, @ref USART_Payload_Length_Define
+ * 								  		  @ref USART_Parity_Define, @ref USART_StopBit_Define, @ref USART_Hw_FlowCtl_Define,
+ * 								 	      @ref USART_IRQ_Enable_Define
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_Init(USART_TypedDef *UARTx, UART_PinConfig_t *UART_Config)
 {
 
@@ -97,6 +107,13 @@ void MCAL_UART_Init(USART_TypedDef *UARTx, UART_PinConfig_t *UART_Config)
 }
 
 
+/**================================================================
+ * @Fn				- MCAL_UART_DeInit
+ * @breif			- Resets All UARTx Registers
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_DeInit(USART_TypedDef *UARTx)
 {
 	//Disable Clk & Interrupt IRQ
@@ -117,7 +134,13 @@ void MCAL_UART_DeInit(USART_TypedDef *UARTx)
 	}
 }
 
-//According to 9.1.11 GPIO configurations for device peripherals: Table 24. USARTs
+/**================================================================
+ * @Fn				- MCAL_UART_GPIO_Set_Pins
+ * @breif			- Sets the GPIO pins to the recommended mode According to 9.1.11 GPIO configurations for device peripherals: Table 24. USARTs
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_GPIO_Set_Pins(USART_TypedDef *UARTx)
 {
 	GPIO_PinConfig_t PinCfg;
@@ -219,6 +242,15 @@ void MCAL_UART_GPIO_Set_Pins(USART_TypedDef *UARTx)
 }
 
 
+/**================================================================
+ * @Fn				- MCAL_UART_SendData
+ * @breif			- Takes Data from user and stores it in DR register to be transmitted
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @param [in]		- pTxBuffer: Pointer to buffer storing data to be sent
+ * @param [in]		- PollingEN: Enables/Disables Polling mode (halt the processor until data is ready to be transmitted)
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_SendData(USART_TypedDef *UARTx, uint16 *pTxBuffer, enum Polling_mechnism PollingEN)
 {
 	//wait until TXE Flag is set in USART_SR
@@ -262,6 +294,14 @@ void MCAL_UART_SendData(USART_TypedDef *UARTx, uint16 *pTxBuffer, enum Polling_m
 
 }
 
+
+/**================================================================
+ * @Fn				- MCAL_UART_WAIT_TC
+ * @breif			- Halts the processor until data is ready to be transmitted
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_WAIT_TC(USART_TypedDef *UARTx)
 {
 	//Wait until TC Flag is SET
@@ -269,6 +309,15 @@ void MCAL_UART_WAIT_TC(USART_TypedDef *UARTx)
 }
 
 
+/**================================================================
+ * @Fn				- MCAL_UART_RecieveData
+ * @breif			- Takes Data from DR register and stores it software buffer
+ * @param [in]		- UARTx: where x can be (1..5 depending on device used) to select UART peripheral
+ * @param [in]		- pTxBuffer: Pointer to buffer storing data to received
+ * @param [in]		- PollingEN: Enables/Disables Polling mode (halt the processor until data is received)
+ * @retval			- None
+ * Note				- None
+ */
 void MCAL_UART_RecieveData(USART_TypedDef *UARTx, uint16 *pTxBuffer, enum Polling_mechnism PollingEN)
 {
 	//Wait until Data is Received
